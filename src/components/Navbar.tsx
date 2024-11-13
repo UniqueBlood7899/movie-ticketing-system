@@ -11,8 +11,6 @@ export function Navbar() {
 
   const NavigationItems = () => (
     <>
-      <Link to="/movies" className="text-gray-600 hover:text-indigo-600">Movies</Link>
-      <Link to="/theaters" className="text-gray-600 hover:text-indigo-600">Theaters</Link>
       {user && !isAdmin && (
         <Link to="/bookings" className="text-gray-600 hover:text-indigo-600">
           My Bookings

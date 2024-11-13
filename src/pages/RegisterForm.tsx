@@ -26,19 +26,19 @@ export function RegisterForm() {
     try {
       if (role === 'admin') {
         const { token, user } = await adminRegister({ 
-          name, 
-          email, 
-          password, 
-          contact 
+          name, email, password, contact 
         })
         setAuth(token, user, 'admin')
         navigate({ to: '/admin' })
+      } else if (role === 'owner') {
+        const { token, user } = await theaterOwnerRegister({
+          name, email, password, contact
+        })
+        setAuth(token, user, 'owner')
+        navigate({ to: '/owner/dashboard' })
       } else {
         const { token, user } = await register({ 
-          name, 
-          email, 
-          password, 
-          phone: contact 
+          name, email, password, phone: contact 
         })
         setAuth(token, user, 'user')
         navigate({ to: '/' })
@@ -53,7 +53,8 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <h2 className="text-2xl font-bold text-center mb-6">
-        {role === 'admin' ? 'Admin Registration' : 'User Registration'}
+        {role === 'admin' ? 'Admin Registration' : 
+         role === 'owner' ? 'Theater Owner Registration' : 'User Registration'}
       </h2>
       {error && (
         <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">

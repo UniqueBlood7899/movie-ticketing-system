@@ -6,6 +6,20 @@ export interface User {
   phone?: string
 }
 
+export interface Admin {
+  id: number
+  name: string
+  email: string
+  contact?: string
+}
+
+export interface TheaterOwner {
+  id: number
+  name: string
+  email: string
+  contact?: string
+}
+
 export interface Movie {
   id: number
   title: string
@@ -54,15 +68,8 @@ export interface Food {
 
 export interface AuthState {
   token: string | null
-  user: User | Admin | null
+  user: User | Admin | TheaterOwner | null
   role: UserRole | null
 }
 
-export interface Admin {
-  id: number
-  name: string
-  email: string
-  contact?: string
-}
-
-export type UserRole = 'user' | 'admin'
+export type UserRole = 'user' | 'admin' | 'owner';

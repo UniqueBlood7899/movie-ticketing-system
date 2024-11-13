@@ -14,6 +14,9 @@ import { AdminMovies } from '../pages/AdminMovies'
 import { AdminTheaters } from '../pages/AdminTheaters'
 import { AdminShows } from '../pages/AdminShows'
 import { AdminFood } from '../pages/AdminFood'
+import { TheaterOwnerForm } from '../pages/TheaterOwnerForm'
+import { TheaterOwnerHome } from '../pages/TheaterOwnerHome'
+import { TheaterOwnerMovies } from '../pages/TheaterOwnerMovies'
 
 // Create a root route
 const rootRoute = createRootRoute({
@@ -174,6 +177,48 @@ const adminFoodRoute = createRoute({
   ),
 })
 
+const theaterOwnerLoginRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/owner/login',
+  component: () => <TheaterOwnerForm type="login" />
+})
+
+const theaterOwnerRegisterRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/owner/register', 
+  component: () => <TheaterOwnerForm type="register" />
+})
+
+const theaterOwnerHomeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/owner/dashboard',
+  component: TheaterOwnerHome,
+  beforeLoad: () => {
+    const { user } = useAuthStore.getState()
+    if (!user || user.role !== 'owner') {
+      throw new Error('Unauthorized')
+    }
+  },
+  errorComponent: () => (
+    <Navigate to="/owner/login" />
+  ),
+})
+
+const theaterOwnerMoviesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/owner/movies',
+  component: TheaterOwnerMovies,
+  beforeLoad: () => {
+    const { user } = useAuthStore.getState()
+    if (!user || user.role !== 'owner') {
+      throw new Error('Unauthorized')
+    }
+  },
+  errorComponent: () => (
+    <Navigate to="/owner/login" />
+  ),
+})
+
 // Create the route tree
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -188,6 +233,10 @@ const routeTree = rootRoute.addChildren([
   adminTheatersRoute,
   adminShowsRoute,
   adminFoodRoute,
+  theaterOwnerLoginRoute,
+  theaterOwnerRegisterRoute,
+  theaterOwnerHomeRoute,
+  theaterOwnerMoviesRoute,
 ])
 
 // Create and export the router

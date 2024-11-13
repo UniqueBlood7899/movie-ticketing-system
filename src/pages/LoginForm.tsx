@@ -1,7 +1,7 @@
 //src/components/LoginForm.tsx
 import { useState } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { login, adminLogin } from '../lib/api';
+import { login, adminLogin, theaterOwnerLogin } from '../lib/api';
 import { useAuthStore } from '../stores/auth';
 import type { UserRole } from '../types';
 
@@ -22,10 +22,21 @@ export function LoginForm() {
     const password = formData.get('password') as string;
 
     try {
-      const loginFn = role === 'admin' ? adminLogin : login;
+      let loginFn;
+      if (role === 'admin') {
+        loginFn = adminLogin;
+      } else if (role === 'owner') {
+        loginFn = theaterOwnerLogin;
+      } else {
+        loginFn = login;
+      }
+
       const { token, user } = await loginFn({ email, password });
       setAuth(token, user, role as UserRole);
-      navigate({ to: role === 'admin' ? '/admin' : '/' });
+      navigate({ 
+        to: role === 'admin' ? '/admin' : 
+            role === 'owner' ? '/owner/dashboard' : '/'
+      });
     } catch (err) {
       setError('Invalid credentials');
     } finally {
@@ -36,7 +47,8 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <h2 className="text-2xl font-bold text-center mb-6">
-        {role === 'admin' ? 'Admin Login' : 'User Login'}
+        {role === 'admin' ? 'Admin Login' : 
+         role === 'owner' ? 'Theater Owner Login' : 'User Login'}
       </h2>
       {error && (
         <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">

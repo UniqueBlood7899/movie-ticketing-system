@@ -54,3 +54,10 @@ export const deleteMovie = (id: number) => api.delete(`/movies/${id}`).then(res 
 export const createFoodItem = (data: any) => api.post('/food', data).then(res => res.data)
 export const updateFoodItem = (id: number, data: any) => api.put(`/food/${id}`, data).then(res => res.data)
 export const deleteFoodItem = (id: number) => api.delete(`/food/${id}`).then(res => res.data)
+
+// Theater Owner endpoints
+export const theaterOwnerLogin = (data: any) => 
+  api.post('/users/owner/login', data).then(res => res.data)
+
+export const theaterOwnerRegister = (data: any) => 
+  api.post('/users/owner/register', data).then(res => res.data)
