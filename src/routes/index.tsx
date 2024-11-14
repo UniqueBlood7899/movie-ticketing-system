@@ -1,5 +1,5 @@
 //src/routes/index.tsx
-import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
+import { createRootRoute, createRoute, createRouter, Link } from '@tanstack/react-router'
 import App from '../App'
 import { Home } from '../pages/Home'
 import { AdminHome } from '../pages/AdminHome'
@@ -17,6 +17,8 @@ import { AdminFood } from '../pages/AdminFood'
 import { TheaterOwnerForm } from '../pages/TheaterOwnerForm'
 import { TheaterOwnerHome } from '../pages/TheaterOwnerHome'
 import { TheaterOwnerMovies } from '../pages/TheaterOwnerMovies'
+import { TheaterOwnerTheaters } from '../pages/Theaters'
+import { Navigate } from '@tanstack/react-router'
 
 // Create a root route
 const rootRoute = createRootRoute({
@@ -134,7 +136,7 @@ const adminMoviesRoute = createRoute({
 
 const adminTheatersRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/admin/theatres',
+  path: '/admin/theaters', // Fixed typo from 'theatres' to 'theaters'
   component: AdminTheaters,
   beforeLoad: () => {
     const { user } = useAuthStore.getState()
@@ -219,6 +221,19 @@ const theaterOwnerMoviesRoute = createRoute({
   ),
 })
 
+const theaterOwnerTheatersRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/owner/theaters',
+  component: TheaterOwnerTheaters,
+  beforeLoad: () => {
+    const { user } = useAuthStore.getState()
+    if (!user || user.role !== 'owner') {
+      throw new Error('Unauthorized')
+    }
+  },
+  errorComponent: () => <Navigate to="/owner/login" />
+})
+
 // Create the route tree
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -237,6 +252,7 @@ const routeTree = rootRoute.addChildren([
   theaterOwnerRegisterRoute,
   theaterOwnerHomeRoute,
   theaterOwnerMoviesRoute,
+  theaterOwnerTheatersRoute,
 ])
 
 // Create and export the router

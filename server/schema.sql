@@ -28,6 +28,7 @@ CREATE TABLE theater (
   location VARCHAR(255) NOT NULL,
   capacity INT NOT NULL,
   owner_id INT,
+  status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
   FOREIGN KEY (owner_id) REFERENCES theater_owner(id)
 );
 
@@ -49,11 +50,10 @@ CREATE TABLE `show` (
   id INT PRIMARY KEY AUTO_INCREMENT,
   movie_id INT,
   theater_id INT,
-  show_date DATE NOT NULL,
-  show_time TIME NOT NULL,
+  show_time DATETIME NOT NULL,
   price DECIMAL(10,2) NOT NULL,
-  FOREIGN KEY (movie_id) REFERENCES movie(id),
-  FOREIGN KEY (theater_id) REFERENCES theater(id)
+  FOREIGN KEY (movie_id) REFERENCES movie(id) ON DELETE CASCADE,
+  FOREIGN KEY (theater_id) REFERENCES theater(id) ON DELETE CASCADE
 );
 
 -- User table

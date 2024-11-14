@@ -19,6 +19,24 @@ const port = process.env.PORT;
 app.use(cors());
 app.use(express.json());
 
+// Add debug logging
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
+
+// Add before routes setup
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+
+// Debug middleware
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
+
 // Database connection
 export const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -37,6 +55,18 @@ app.use('/api/shows', showRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/food', foodRoutes);
+
+// 404 handler
+app.use((req, res) => {
+  console.log(`404: ${req.method} ${req.url}`);
+  res.status(404).json({ error: 'Not found' });
+});
+
+// Add error handler
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: 'Internal server error' });
+});
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

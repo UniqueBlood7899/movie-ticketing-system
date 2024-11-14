@@ -1,7 +1,15 @@
+import { Navigate } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
-import { Film, MapPin, Ticket } from 'lucide-react'
+import { Film, Building2, Ticket } from 'lucide-react'
+import { useAuthStore } from '../stores/auth'
 
 export function Home() {
+  const { user } = useAuthStore()
+  
+  if (user?.role === 'owner') {
+    return <Navigate to="/owner/dashboard" />
+  }
+
   return (
     <div className="max-w-7xl mx-auto">
       <div className="text-center mb-12">
@@ -26,7 +34,7 @@ export function Home() {
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <MapPin className="h-12 w-12 text-indigo-600 mb-4" />
+          <Building2 className="h-12 w-12 text-indigo-600 mb-4" />
           <h2 className="text-xl font-semibold mb-2">Find Theaters</h2>
           <p className="text-gray-600 mb-4">
             Discover theaters near you with the best experience

@@ -37,17 +37,17 @@ export interface Theater {
   location: string
   capacity: number
   owner_id: number
+  status: 'pending' | 'approved' | 'rejected'
 }
 
 export interface Show {
-  id: number
-  movie_id: number
-  theater_id: number
-  show_date: string
-  show_time: string
-  price: number
-  movie: Movie
-  theater: Theater
+  id: number;
+  movie_id: number;
+  theater_id: number;
+  show_time: string;
+  price: number;
+  movie?: Movie;
+  theater?: Theater;
 }
 
 export interface Booking {

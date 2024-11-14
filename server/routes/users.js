@@ -94,25 +94,39 @@ router.post('/admin/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const [admins] = await pool.query('SELECT * FROM admin WHERE email = ?', [email]);
+    const [admins] = await pool.execute(
+      'SELECT * FROM admin WHERE email = ?',
+      [email]
+    );
+
     if (admins.length === 0) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Invalid admin credentials' });
     }
 
     const admin = admins[0];
     const validPassword = await bcrypt.compare(password, admin.password);
+    
     if (!validPassword) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Invalid admin credentials' });
     }
 
-    const token = jwt.sign({ id: admin.id, role: 'admin' }, process.env.JWT_SECRET);
-    res.json({ 
-      token, 
-      user: { id: admin.id, name: admin.name, email: admin.email, contact: admin.contact },
-      role: 'admin'
+    const token = jwt.sign(
+      { id: admin.id, role: 'admin' }, 
+      process.env.JWT_SECRET
+    );
+
+    res.json({
+      token,
+      user: {
+        id: admin.id,
+        name: admin.name,
+        email: admin.email,
+        role: 'admin'
+      }
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Admin login error:', error);
+    res.status(500).json({ error: 'Login failed' });
   }
 });
 
@@ -167,14 +181,21 @@ router.post('/owner/login', async (req, res) => {
   const { email, password } = req.body;
   
   try {
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
     // Get owner from database
     const [owners] = await pool.execute(
       'SELECT * FROM theater_owner WHERE email = ?',
       [email]
     );
 
+    // Add detailed error for debugging
+    console.log('Login attempt:', { email, foundOwner: !!owners.length });
+
     if (owners.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
     const owner = owners[0];
@@ -182,7 +203,7 @@ router.post('/owner/login', async (req, res) => {
     // Validate password
     const validPassword = await bcrypt.compare(password, owner.password);
     if (!validPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
     // Generate token

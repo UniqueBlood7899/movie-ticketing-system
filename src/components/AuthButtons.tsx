@@ -3,6 +3,7 @@ import { LogOut } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
 import { useAuthStore } from '../stores/auth'
 import { AuthDropdown } from './AuthDropdown'
+import { Link } from '@tanstack/react-router'
 
 export function AuthButtons() {
   const navigate = useNavigate()
@@ -40,3 +41,5 @@ export function AuthButtons() {
     </div>
   )
 }
+
+export default AuthButtons

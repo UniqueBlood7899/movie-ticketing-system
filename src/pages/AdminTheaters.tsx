@@ -1,16 +1,39 @@
 //src/pages/AdminTheaters.tsx
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { getTheaters } from '../lib/api'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { getTheaters, updateTheaterStatus, deleteTheater } from '../lib/api'
 import { Building2, Plus, Pencil, Trash2, MapPin, Users } from 'lucide-react'
 import type { Theater } from '../types'
 
 export function AdminTheaters() {
+  const queryClient = useQueryClient()
   const [isAddingTheater, setIsAddingTheater] = useState(false)
   const { data: theaters, isLoading } = useQuery({
     queryKey: ['theaters'],
     queryFn: getTheaters,
   })
+
+  const handleStatusUpdate = async (theaterId: number, status: 'approved' | 'rejected') => {
+    try {
+      await updateTheaterStatus(theaterId, status)
+      queryClient.invalidateQueries({
+        queryKey: ['theaters']
+      })
+    } catch (error) {
+      console.error('Failed to update theater status:', error)
+    }
+  }
+
+  const handleDelete = async (theaterId: number) => {
+    if (!window.confirm('Are you sure you want to delete this theater?')) return
+    
+    try {
+      await deleteTheater(theaterId)
+      queryClient.invalidateQueries(['theaters'])
+    } catch (error) {
+      console.error('Failed to delete theater:', error)
+    }
+  }
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -92,7 +115,16 @@ export function AdminTheaters() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {theaters?.map((theater: Theater) => (
             <div key={theater.id} className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">{theater.name}</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">{theater.name}</h2>
+                <span className={`px-2 py-1 rounded text-sm ${
+                  theater.status === 'approved' ? 'bg-green-100 text-green-800' :
+                  theater.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                  'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {theater.status}
+                </span>
+              </div>
               <div className="text-gray-600 space-y-2 mb-4">
                 <div className="flex items-center">
                   <MapPin className="h-5 w-5 mr-2" />
@@ -103,11 +135,27 @@ export function AdminTheaters() {
                   <span>Capacity: {theater.capacity} seats</span>
                 </div>
               </div>
-              <div className="flex justify-end space-x-2">
-                <button className="p-2 text-blue-600 hover:text-blue-800">
-                  <Pencil className="h-5 w-5" />
-                </button>
-                <button className="p-2 text-red-600 hover:text-red-800">
+              {theater.status === 'pending' && (
+                <div className="flex justify-end space-x-2 mb-4">
+                  <button
+                    onClick={() => handleStatusUpdate(theater.id, 'approved')}
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => handleStatusUpdate(theater.id, 'rejected')}
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
+              <div className="flex justify-end">
+                <button 
+                  onClick={() => handleDelete(theater.id)}
+                  className="p-2 text-red-600 hover:text-red-800"
+                >
                   <Trash2 className="h-5 w-5" />
                 </button>
               </div>
