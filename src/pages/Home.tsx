@@ -1,13 +1,24 @@
-import { Navigate } from '@tanstack/react-router'
+import { Navigate, useNavigate } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
 import { Film, Building2, Ticket } from 'lucide-react'
 import { useAuthStore } from '../stores/auth'
 
 export function Home() {
   const { user } = useAuthStore()
+  const navigate = useNavigate()
   
   if (user?.role === 'owner') {
     return <Navigate to="/owner/dashboard" />
+  }
+
+  const handleBookNow = () => {
+    if (!user) {
+      if (window.confirm('Please login to book tickets.')) {
+        navigate({ to: '/login' })
+      }
+      return
+    }
+    navigate({ to: '/movies' })
   }
 
   return (
@@ -21,38 +32,20 @@ export function Home() {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8 mb-12">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <Film className="h-12 w-12 text-indigo-600 mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Latest Movies</h2>
-          <p className="text-gray-600 mb-4">
-            Browse the newest releases and upcoming movies
-          </p>
-          <Link to="/movies" className="text-indigo-600 hover:text-indigo-800">
-            View Movies →
-          </Link>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <Building2 className="h-12 w-12 text-indigo-600 mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Find Theaters</h2>
-          <p className="text-gray-600 mb-4">
-            Discover theaters near you with the best experience
-          </p>
-          <Link to="/theaters" className="text-indigo-600 hover:text-indigo-800">
-            Find Theaters →
-          </Link>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <Ticket className="h-12 w-12 text-indigo-600 mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Quick Booking</h2>
-          <p className="text-gray-600 mb-4">
+      {/* Single card with full width */}
+      <div className="max-w-2xl mx-auto mb-12">
+        <div className="bg-white p-8 rounded-lg shadow-md">
+          <Ticket className="h-16 w-16 text-indigo-600 mb-6 mx-auto" />
+          <h2 className="text-2xl font-semibold mb-4 text-center">Quick Booking</h2>
+          <p className="text-gray-600 mb-6 text-center text-lg">
             Fast and easy ticket booking for your convenience
           </p>
-          <Link to="/movies" className="text-indigo-600 hover:text-indigo-800">
+          <button 
+            onClick={handleBookNow}
+            className="w-full bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 text-lg font-medium"
+          >
             Book Now →
-          </Link>
+          </button>
         </div>
       </div>
 

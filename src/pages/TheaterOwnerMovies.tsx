@@ -105,26 +105,31 @@ export function TheaterOwnerMovies() {
     const form = e.currentTarget
     const formData = new FormData(form)
     
+    const showDate = formData.get('show_date') as string
     const showTime = formData.get('show_time') as string
     const price = Number(formData.get('price'))
     const theaterId = Number(formData.get('theater_id'))
 
-    if (!selectedMovie?.id || !theaterId || !showTime || !price) {
+    if (!selectedMovie?.id || !theaterId || !showDate || !showTime || !price) {
       setError('Please fill in all fields')
       return
     }
 
-    const showData = {
-      movie_id: selectedMovie.id,
-      theater_id: theaterId,
-      show_time: showTime,
-      price: price
-    }
-
     try {
+      // Combine date and time into proper MySQL datetime format
+      const combinedDateTime = `${showDate}T${showTime}:00`
+
+      const showData = {
+        movie_id: selectedMovie.id,
+        theater_id: theaterId,
+        show_time: combinedDateTime,
+        price: price
+      }
+
       await createShowMutation.mutateAsync(showData)
     } catch (err) {
-      // Error will be handled by mutation error callback
+      console.error('Failed to create show:', err)
+      setError(err instanceof Error ? err.message : 'Failed to create show')
     }
   }
 
@@ -320,28 +325,38 @@ export function TheaterOwnerMovies() {
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                   >
                     <option value="">Select a theater</option>
-                    {theaters && theaters.length > 0 ? (
-                      theaters.map((theater: Theater) => (
-                        <option key={theater.id} value={theater.id}>
-                          {theater.name} ({theater.location}) - {theater.capacity} seats
-                        </option>
-                      ))
-                    ) : (
-                      <option value="" disabled>No approved theaters available</option>
-                    )}
+                    {theaters?.map((theater: Theater) => (
+                      <option key={theater.id} value={theater.id}>
+                        {theater.name} ({theater.location}) - {theater.capacity} seats
+                      </option>
+                    ))}
                   </select>
                 </div>
-                <div>
-                  <label htmlFor="show_time" className="block text-sm font-medium text-gray-700">
-                    Show Time
-                  </label>
-                  <input
-                    type="datetime-local"
-                    id="show_time"
-                    name="show_time"
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="show_date" className="block text-sm font-medium text-gray-700">
+                      Show Date
+                    </label>
+                    <input
+                      type="date"
+                      id="show_date"
+                      name="show_date"
+                      required
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="show_time" className="block text-sm font-medium text-gray-700">
+                      Show Time
+                    </label>
+                    <input
+                      type="time"
+                      id="show_time"
+                      name="show_time"
+                      required
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label htmlFor="price" className="block text-sm font-medium text-gray-700">

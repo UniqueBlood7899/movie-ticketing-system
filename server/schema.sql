@@ -46,7 +46,7 @@ CREATE TABLE movie (
 );
 
 -- Show table
-CREATE TABLE `show` (
+CREATE TABLE shows (
   id INT PRIMARY KEY AUTO_INCREMENT,
   movie_id INT,
   theater_id INT,
@@ -74,7 +74,7 @@ CREATE TABLE booking (
   seats JSON NOT NULL,
   total_amount DECIMAL(10,2) NOT NULL,
   FOREIGN KEY (user_id) REFERENCES user(id),
-  FOREIGN KEY (show_id) REFERENCES `show`(id)
+  FOREIGN KEY (show_id) REFERENCES shows(id)
 );
 
 -- Food table
@@ -93,3 +93,23 @@ CREATE TABLE food_booking (
   FOREIGN KEY (booking_id) REFERENCES booking(id),
   FOREIGN KEY (food_id) REFERENCES food(id)
 );
+
+-- First, let's add theater_id to movie table
+ALTER TABLE movie 
+ADD COLUMN theater_id INT,
+ADD FOREIGN KEY (theater_id) REFERENCES theater(id) ON DELETE SET NULL;
+
+-- Update existing movie with theater_id
+UPDATE movie SET theater_id = 1 WHERE id = 1;
+
+-- Add show_id to theater table
+ALTER TABLE theater 
+ADD COLUMN show_id INT,
+ADD FOREIGN KEY (show_id) REFERENCES shows(id) ON DELETE SET NULL;
+
+-- Update existing theater with show_id
+UPDATE theater SET show_id = 1 WHERE id = 1;
+
+-- Add indexes to improve query performance
+CREATE INDEX idx_movie_theater ON movie(theater_id);
+CREATE INDEX idx_theater_show ON theater(show_id);

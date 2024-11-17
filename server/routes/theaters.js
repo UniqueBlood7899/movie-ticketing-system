@@ -10,10 +10,16 @@ router.get('/test', (req, res) => {
   res.json({ message: 'Theater routes working' });
 });
 
-// Get all theaters
+// Get all theaters with show info
 router.get('/', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM theater');
+    const [rows] = await pool.query(`
+      SELECT t.*, s.show_time, s.price, 
+             m.title as movie_title, m.duration
+      FROM theater t
+      LEFT JOIN shows s ON t.show_id = s.id
+      LEFT JOIN movie m ON s.movie_id = m.id
+    `);
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -33,53 +39,25 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create theater (for theater owner)
+// Create theater
 router.post('/', async (req, res) => {
-  console.log('Received theater creation request:', req.body);
   const { name, location, capacity, owner_id } = req.body;
   try {
-    // Validate input
-    if (!name || !location || !capacity || !owner_id) {
-      return res.status(400).json({ error: 'All fields are required' });
-    }
-
-    // Verify theater owner exists
-    const [owners] = await pool.execute(
-      'SELECT id FROM theater_owner WHERE id = ?',
-      [owner_id]
-    );
-
-    if (owners.length === 0) {
-      return res.status(404).json({ 
-        error: 'Theater owner not found',
-        details: 'Invalid owner_id provided' 
-      });
-    }
-
-    const [result] = await pool.execute(
+    const [result] = await pool.query(
       'INSERT INTO theater (name, location, capacity, owner_id) VALUES (?, ?, ?, ?)',
       [name, location, capacity, owner_id]
     );
-    
-    const [newTheater] = await pool.execute(
-      'SELECT * FROM theater WHERE id = ?',
-      [result.insertId]
-    );
 
-    res.status(201).json({
-      id: result.insertId,
-      name,
-      location,
-      capacity,
-      owner_id,
-      status: 'pending'
-    });
+    const [theater] = await pool.query(`
+      SELECT t.*, s.show_time, s.price 
+      FROM theater t
+      LEFT JOIN shows s ON t.show_id = s.id
+      WHERE t.id = ?
+    `, [result.insertId]);
+
+    res.status(201).json(theater[0]);
   } catch (error) {
-    console.error('Theater creation error:', error);
-    res.status(500).json({ 
-      error: 'Failed to create theater',
-      details: error.message 
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 

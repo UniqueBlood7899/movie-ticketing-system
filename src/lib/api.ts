@@ -56,7 +56,13 @@ export const getOwnerTheaters = (ownerId: number) =>
 // Shows
 export const getShows = () => api.get<Show[]>('/shows').then(res => res.data)
 export const getShow = (id: string) => api.get<Show>(`/shows/${id}`).then(res => res.data)
-export const createShow = (data: Partial<Show>) => api.post<Show>('/shows', data).then(res => res.data)
+export const createShow = (data: Partial<Show>) => 
+  api.post<Show>('/shows', {
+    movie_id: data.movie_id,
+    theater_id: data.theater_id,
+    show_time: data.show_time, // Should be in format: YYYY-MM-DDTHH:mm:ss
+    price: data.price
+  }).then(res => res.data)
 export const deleteShow = (id: number) => api.delete<void>(`/shows/${id}`).then(res => res.data)
 
 export const getTheaterShows = (theaterId: number) => 
