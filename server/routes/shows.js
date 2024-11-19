@@ -62,6 +62,53 @@ router.get('/theater/:theaterId', async (req, res) => {
   }
 });
 
+// Get show by ID
+router.get('/:id', async (req, res) => {
+  try {
+    console.log(`Fetching show with ID: ${req.params.id}`); // Add logging
+
+    const [rows] = await pool.query(`
+      SELECT s.*, 
+             m.id as movie_id, m.title, m.duration, m.genre, m.image_url, m.description,
+             t.id as theater_id, t.name as theater_name, t.location
+      FROM shows s
+      JOIN movie m ON s.movie_id = m.id
+      JOIN theater t ON s.theater_id = t.id
+      WHERE s.id = ?
+    `, [req.params.id]);
+
+    if (rows.length === 0) {
+      console.log('Show not found'); // Add logging
+      return res.status(404).json({ message: 'Show not found' });
+    }
+
+    const show = {
+      id: rows[0].id,
+      show_time: rows[0].show_time,
+      price: rows[0].price,
+      movie: {
+        id: rows[0].movie_id,
+        title: rows[0].title,
+        duration: rows[0].duration,
+        genre: rows[0].genre,
+        description: rows[0].description,
+        image_url: rows[0].image_url
+      },
+      theater: {
+        id: rows[0].theater_id,
+        name: rows[0].theater_name,
+        location: rows[0].location
+      }
+    };
+
+    console.log('Show details:', show); // Add logging
+    res.json(show);
+  } catch (error) {
+    console.error('Error getting show:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Create show
 router.post('/', async (req, res) => {
   const { movie_id, theater_id, show_time, price } = req.body;

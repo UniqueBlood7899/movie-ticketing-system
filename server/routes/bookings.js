@@ -22,7 +22,9 @@ router.get('/', authenticateToken, async (req, res) => {
     const bookings = rows.map(row => ({
       id: row.id,
       booking_date: row.booking_date,
-      seats: JSON.parse(row.seats),
+      seats: Array.isArray(row.seats) ? row.seats : 
+             typeof row.seats === 'string' ? row.seats.split(',') :
+             JSON.parse(row.seats), // Try parsing if it's a JSON string
       total_amount: row.total_amount,
       show: {
         id: row.show_id,
@@ -82,7 +84,7 @@ router.post('/', authenticateToken, async (req, res) => {
       total_amount += foodTotal;
     }
 
-    // Create booking
+    // Insert into booking table
     const [result] = await connection.query(
       'INSERT INTO booking (user_id, show_id, seats, total_amount) VALUES (?, ?, ?, ?)',
       [req.user.id, show_id, JSON.stringify(seats), total_amount]

@@ -65,27 +65,9 @@ const bookingsRoute = createRoute({
     if (!user) {
       throw new Error('Unauthorized')
     }
-    if (user.role === 'admin') {
-      throw new Error('Not available for admin users')
-    }
   },
-  errorComponent: ({ error }) => (
-    <div className="text-center py-12">
-      <h2 className="text-2xl font-semibold mb-4">
-        {error?.message === 'Not available for admin users' 
-          ? 'Booking feature is not available for admin users'
-          : 'Please log in to view your bookings'
-        }
-      </h2>
-      {error?.message !== 'Not available for admin users' && (
-        <Link
-          to="/login"
-          className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700"
-        >
-          Log In
-        </Link>
-      )}
-    </div>
+  errorComponent: () => (
+    <Navigate to="/login" />
   ),
 })
 
@@ -238,6 +220,11 @@ const bookingNewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/booking/new',
   component: BookingForm,
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      showId: String(search.showId)  // Required search param
+    }
+  },
   beforeLoad: () => {
     const { user } = useAuthStore.getState()
     if (!user) {
@@ -250,7 +237,7 @@ const bookingNewRoute = createRoute({
 })
 
 // Create the route tree
-const routeTree = rootRoute.addChildren([
+export const routeTree = rootRoute.addChildren([
   indexRoute,
   moviesRoute,
   theatersRoute,

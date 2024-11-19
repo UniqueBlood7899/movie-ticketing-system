@@ -5,6 +5,7 @@ import { getMovies, getTheaterShows } from '../lib/api'
 import { Calendar, Clock, ChevronDown, ChevronUp } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
 import type { Movie, Theater, Show } from '../types'
+import { useAuthStore } from '../stores/auth'
 
 export function Movies() {
   const navigate = useNavigate()
@@ -12,6 +13,7 @@ export function Movies() {
   const [selectedTheater, setSelectedTheater] = useState<Theater | null>(null)
   const [selectedShow, setSelectedShow] = useState<Show | null>(null)
   const [expandedCard, setExpandedCard] = useState<number | null>(null)
+  const { user } = useAuthStore()
 
   const { data: movies, isLoading } = useQuery({
     queryKey: ['movies'],
@@ -47,15 +49,24 @@ export function Movies() {
   }
 
   const handleBookNow = () => {
-    if (selectedShow) {
+    if (!selectedShow) {
+      return
+    }
+
+    if (user) {
+      // User is logged in, navigate directly to booking form
       navigate({ 
         to: '/booking/new',
         search: { 
-          showId: selectedShow.id.toString(),
-          movieId: selectedMovie?.id.toString(),
-          theaterId: selectedTheater?.id.toString()
+          showId: selectedShow.id.toString()
+          // Remove other params as they're not needed and causing issues
         }
       })
+    } else {
+      // User is not logged in, prompt to login
+      if (window.confirm('Please login to book tickets.')) {
+        navigate({ to: '/login' })
+      }
     }
   }
 

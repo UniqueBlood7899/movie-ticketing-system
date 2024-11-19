@@ -7,16 +7,16 @@ import type { Show, Food } from '../types'
 
 export function BookingForm() {
   const navigate = useNavigate()
-  const search = useSearch()
-  const showId = Number(search.showId)
+  const { showId } = useSearch({ from: '/booking/new' })
+  const showIdNumber = Number(showId)
   
   const [selectedSeats, setSelectedSeats] = useState<string[]>([])
   const [foodSelections, setFoodSelections] = useState<{[key: number]: number}>({})
   const [error, setError] = useState<string | null>(null)
 
   const { data: show, isLoading: showLoading } = useQuery<Show>({
-    queryKey: ['show', showId],
-    queryFn: () => getShow(showId.toString()),
+    queryKey: ['show', showIdNumber],
+    queryFn: () => getShow(showId),
     enabled: !!showId
   })
 
@@ -33,9 +33,6 @@ export function BookingForm() {
     }) => createBooking(bookingData),
     onSuccess: () => {
       navigate({ to: '/bookings' })
-    },
-    onError: (error: Error) => {
-      setError(error.message)
     }
   })
 
@@ -82,7 +79,7 @@ export function BookingForm() {
       }))
 
     bookingMutation.mutate({
-      show_id: showId,
+      show_id: showIdNumber,
       seats: selectedSeats,
       food_items: foodItems
     })
