@@ -4,53 +4,37 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Get all bookings for the authenticated user
-router.get('/', authenticateToken, async (req, res) => {
-  try {
-    const [rows] = await pool.query(`
-      SELECT b.*, s.*, m.title as movie_title, t.name as theater_name
-      FROM booking b
-      JOIN shows s ON b.show_id = s.id
-      JOIN movie m ON s.movie_id = m.id
-      JOIN theater t ON s.theater_id = t.id
-      WHERE b.user_id = ?
-    `, [req.user.id]);
-    res.json(rows);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get shows by movie ID
-router.get('/movie/:movieId', async (req, res) => {
-  try {
-    const [rows] = await pool.query(`
-      SELECT s.*, t.name as theater_name, t.location
-      FROM shows s
-      JOIN theater t ON s.theater_id = t.id
-      WHERE s.movie_id = ?
-    `, [req.params.movieId]);
-    res.json(rows);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get theater shows with movie details
-router.get('/theaters/:theaterId/shows', async (req, res) => {
+// Get all shows
+router.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query(`
       SELECT s.*, 
-             m.title, m.duration, m.image_url, m.genre, m.description,
+             m.title as movie_title, m.duration, m.genre, m.image_url,
              t.name as theater_name, t.location
-      FROM \`show\` s
+      FROM shows s
+      JOIN movie m ON s.movie_id = m.id
+      JOIN theater t ON s.theater_id = t.id
+    `);
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get shows for a specific theater
+router.get('/theater/:theaterId', async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT s.*, 
+             m.title, m.duration, m.genre, m.image_url, m.description,
+             t.name as theater_name, t.location
+      FROM shows s
       JOIN movie m ON s.movie_id = m.id
       JOIN theater t ON s.theater_id = t.id
       WHERE s.theater_id = ?
       ORDER BY s.show_time ASC
     `, [req.params.theaterId]);
     
-    // Format the response with complete movie details
     const shows = rows.map(row => ({
       id: row.id,
       movie_id: row.movie_id,
@@ -66,6 +50,7 @@ router.get('/theaters/:theaterId/shows', async (req, res) => {
         image_url: row.image_url
       },
       theater: {
+        id: row.theater_id,
         name: row.theater_name,
         location: row.location
       }
@@ -99,9 +84,6 @@ router.post('/', async (req, res) => {
       [movie_id, theater_id, show_time, price]
     );
 
-    // Update theater with show_id
-    await pool.query('UPDATE theater SET show_id = ? WHERE id = ?', [result.insertId, theater_id]);
-
     // Get complete show details
     const [shows] = await pool.query(`
       SELECT s.*, m.title, m.duration, m.genre, m.image_url,
@@ -119,17 +101,14 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Get shows with complete info
-router.get('/', async (req, res) => {
+// Delete show
+router.delete('/:id', async (req, res) => {
   try {
-    const [rows] = await pool.query(`
-      SELECT s.*, m.title, m.duration, m.genre, m.image_url,
-             t.name as theater_name, t.location 
-      FROM shows s
-      JOIN movie m ON s.movie_id = m.id
-      JOIN theater t ON s.theater_id = t.id
-    `);
-    res.json(rows);
+    const [result] = await pool.query('DELETE FROM shows WHERE id = ?', [req.params.id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Show not found' });
+    }
+    res.json({ message: 'Show deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -3,7 +3,7 @@ import { pool } from '../index.js';
 
 const router = express.Router();
 
-console.log('Theater routes initialized'); // Add debug log
+console.log('Theater routes initialized');
 
 router.get('/test', (req, res) => {
   console.log('Test route hit');
@@ -34,6 +34,47 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Theater not found' });
     }
     res.json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get theater shows
+router.get('/:theaterId/shows', async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT s.*, 
+             m.title, m.duration, m.genre, m.image_url, m.description,
+             t.name as theater_name, t.location
+      FROM shows s
+      JOIN movie m ON s.movie_id = m.id
+      JOIN theater t ON s.theater_id = t.id
+      WHERE s.theater_id = ?
+      ORDER BY s.show_time ASC
+    `, [req.params.theaterId]);
+    
+    const shows = rows.map(row => ({
+      id: row.id,
+      movie_id: row.movie_id,
+      theater_id: row.theater_id,
+      show_time: row.show_time,
+      price: row.price,
+      movie: {
+        id: row.movie_id,
+        title: row.title,
+        duration: row.duration,
+        genre: row.genre,
+        description: row.description,
+        image_url: row.image_url
+      },
+      theater: {
+        id: row.theater_id,
+        name: row.theater_name,
+        location: row.location
+      }
+    }));
+    
+    res.json(shows);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
