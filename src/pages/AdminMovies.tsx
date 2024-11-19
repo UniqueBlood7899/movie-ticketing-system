@@ -1,16 +1,57 @@
-//src/pages/AdminMovies.tsx
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { getMovies } from '../lib/api'
-import { Film, Plus, Pencil, Trash2 } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getMovies, createMovie } from '../lib/api'
+import { Film, Plus, Pencil, Trash2, Calendar, Clock } from 'lucide-react'
 import type { Movie } from '../types'
+import { useAuthStore } from '../stores/auth'
 
 export function AdminMovies() {
+  const { user } = useAuthStore()
+  const queryClient = useQueryClient()
   const [isAddingMovie, setIsAddingMovie] = useState(false)
+  const [error, setError] = useState('')
+
   const { data: movies, isLoading } = useQuery({
     queryKey: ['movies'],
     queryFn: getMovies,
   })
+
+  const createMovieMutation = useMutation({
+    mutationFn: createMovie,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['movies'] })
+      setIsAddingMovie(false)
+      setError('')
+    },
+    onError: (error: Error) => {
+      setError(error.message)
+    }
+  })
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    
+    try {
+      const movieData = {
+        title: formData.get('title') as string,
+        duration: Number(formData.get('duration')),
+        genre: formData.get('genre') as string,
+        description: formData.get('description') as string,
+        image_url: formData.get('image_url') as string,
+        release_date: formData.get('release_date') as string,
+        admin_id: user?.id
+      }
+
+      if (!movieData.title || !movieData.duration || !movieData.genre || !movieData.release_date) {
+        throw new Error('Please fill in all required fields')
+      }
+
+      await createMovieMutation.mutateAsync(movieData)
+    } catch (err: any) {
+      setError(err.message || 'Failed to create movie')
+    }
+  }
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -25,12 +66,18 @@ export function AdminMovies() {
         </button>
       </div>
 
+      {error && (
+        <div className="mb-4 p-4 text-red-700 bg-red-100 rounded-md">
+          {error}
+        </div>
+      )}
+
       {isAddingMovie && (
         <div className="mb-8 bg-white p-6 rounded-lg shadow-md">
-          <form className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                Title
+                Title *
               </label>
               <input
                 type="text"
@@ -43,19 +90,20 @@ export function AdminMovies() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
-                  Duration (minutes)
+                  Duration (minutes) *
                 </label>
                 <input
                   type="number"
                   id="duration"
                   name="duration"
                   required
+                  min="1"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 />
               </div>
               <div>
                 <label htmlFor="genre" className="block text-sm font-medium text-gray-700">
-                  Genre
+                  Genre *
                 </label>
                 <input
                   type="text"
@@ -85,12 +133,13 @@ export function AdminMovies() {
                 type="url"
                 id="image_url"
                 name="image_url"
+                placeholder="https://example.com/movie-image.jpg"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               />
             </div>
             <div>
               <label htmlFor="release_date" className="block text-sm font-medium text-gray-700">
-                Release Date
+                Release Date *
               </label>
               <input
                 type="date"
@@ -110,9 +159,10 @@ export function AdminMovies() {
               </button>
               <button
                 type="submit"
-                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                disabled={createMovieMutation.isPending}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50"
               >
-                Save Movie
+                {createMovieMutation.isPending ? 'Adding Movie...' : 'Add Movie'}
               </button>
             </div>
           </form>
@@ -135,6 +185,13 @@ export function AdminMovies() {
               <div className="p-4">
                 <h2 className="text-xl font-semibold mb-2">{movie.title}</h2>
                 <p className="text-gray-600 mb-4 line-clamp-2">{movie.description}</p>
+                <div className="flex items-center text-sm text-gray-500 mb-4">
+                  <Clock className="h-4 w-4 mr-1" />
+                  <span>{movie.duration} mins</span>
+                  <span className="mx-2">•</span>
+                  <Calendar className="h-4 w-4 mr-1" />
+                  <span>{new Date(movie.release_date).toLocaleDateString()}</span>
+                </div>
                 <div className="flex justify-end space-x-2">
                   <button className="p-2 text-blue-600 hover:text-blue-800">
                     <Pencil className="h-5 w-5" />
