@@ -113,3 +113,47 @@ UPDATE theater SET show_id = 1 WHERE id = 1;
 -- Add indexes to improve query performance
 CREATE INDEX idx_movie_theater ON movie(theater_id);
 CREATE INDEX idx_theater_show ON theater(show_id);
+
+-- Create a table to log booking changes
+CREATE TABLE booking_log (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  booking_id INT NOT NULL,
+  action VARCHAR(10) NOT NULL,
+  old_data JSON,
+  new_data JSON,
+  changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (booking_id) REFERENCES booking(id)
+);
+
+-- Trigger to log inserts into the booking table
+DELIMITER //
+CREATE TRIGGER after_booking_insert
+AFTER INSERT ON booking
+FOR EACH ROW
+BEGIN
+  INSERT INTO booking_log (booking_id, action, new_data)
+  VALUES (NEW.id, 'INSERT', JSON_OBJECT('user_id', NEW.user_id, 'show_id', NEW.show_id, 'seats', NEW.seats, 'total_amount', NEW.total_amount));
+END;
+//
+
+-- Trigger to log updates to the booking table
+CREATE TRIGGER after_booking_update
+AFTER UPDATE ON booking
+FOR EACH ROW
+BEGIN
+  INSERT INTO booking_log (booking_id, action, old_data, new_data)
+  VALUES (OLD.id, 'UPDATE', JSON_OBJECT('user_id', OLD.user_id, 'show_id', OLD.show_id, 'seats', OLD.seats, 'total_amount', OLD.total_amount),
+          JSON_OBJECT('user_id', NEW.user_id, 'show_id', NEW.show_id, 'seats', NEW.seats, 'total_amount', NEW.total_amount));
+END;
+//
+
+-- Trigger to log deletes from the booking table
+CREATE TRIGGER after_booking_delete
+AFTER DELETE ON booking
+FOR EACH ROW
+BEGIN
+  INSERT INTO booking_log (booking_id, action, old_data)
+  VALUES (OLD.id, 'DELETE', JSON_OBJECT('user_id', OLD.user_id, 'show_id', OLD.show_id, 'seats', OLD.seats, 'total_amount', OLD.total_amount));
+END;
+//
+DELIMITER ;
