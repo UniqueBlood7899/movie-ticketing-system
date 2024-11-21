@@ -24,8 +24,14 @@ export const createMovie = (movieData: Partial<Movie>) =>
   api.post<Movie>('/movies', movieData).then(res => res.data)
 export const updateMovie = (id: number, data: Partial<Movie>) => 
   api.put<Movie>(`/movies/${id}`, data).then(res => res.data)
-export const deleteMovie = (id: number) => 
-  api.delete(`/movies/${id}`).then(res => res.data)
+export const deleteMovie = async (id: number) => {
+  try {
+    const response = await api.delete(`/movies/${id}`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || 'Failed to delete movie');
+  }
+}
 
 // Theaters
 export const getTheaters = () => api.get<Theater[]>('/theaters').then(res => res.data)

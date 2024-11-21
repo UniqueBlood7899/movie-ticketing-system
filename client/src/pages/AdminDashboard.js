@@ -15,9 +15,33 @@ const AdminDashboard = () => {
     }
   };
 
+  const deleteMovie = async (movieId) => {
+    if (window.confirm('Are you sure you want to delete this movie?')) {
+      try {
+        await axios.delete(`/api/movies/${movieId}`);
+        alert('Movie deleted successfully');
+        // Refresh the movie list after deletion
+        // Assuming you have a fetchMovies function, call it here
+        fetchMovies();
+      } catch (error) {
+        console.error('Error deleting movie:', error);
+        alert(error.response?.data?.message || 'Error deleting movie');
+      }
+    }
+  };
+
   return (
     <div>
       <h1>Admin Dashboard</h1>
+      {/* Add delete button in your movies table/list */}
+      {/* Example usage in a movie list: */}
+      {movies && movies.map((movie) => (
+        <div key={movie.id}>
+          {/* ...existing movie display code... */}
+          <button onClick={() => deleteMovie(movie.id)}>Delete Movie</button>
+        </div>
+      ))}
+      
       {/* ...existing dashboard content... */}
       
       <div className="booking-logs-section">
