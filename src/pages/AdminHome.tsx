@@ -51,33 +51,7 @@ export function AdminHome() {
           </Link>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <Clock className="h-12 w-12 text-indigo-600 mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Manage Shows</h2>
-          <p className="text-gray-600 mb-4">
-            Schedule and manage movie shows
-          </p>
-          <Link 
-            to="/admin/shows" 
-            className="text-indigo-600 hover:text-indigo-800"
-          >
-            Manage Shows →
-          </Link>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <UtensilsCrossed className="h-12 w-12 text-indigo-600 mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Manage Food</h2>
-          <p className="text-gray-600 mb-4">
-            Add and manage food items for theaters
-          </p>
-          <Link 
-            to="/admin/food" 
-            className="text-indigo-600 hover:text-indigo-800"
-          >
-            Manage Food →
-          </Link>
-        </div>
+      
 
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-2">Booking Logs</h2>
