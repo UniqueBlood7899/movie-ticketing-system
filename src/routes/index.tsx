@@ -19,6 +19,8 @@ import { TheaterOwnerHome } from '../pages/TheaterOwnerHome'
 import { TheaterOwnerMovies } from '../pages/TheaterOwnerMovies'
 import { TheaterOwnerTheaters } from '../pages/Theaters'
 import { BookingForm } from '../pages/BookingForm'
+import { AdminBookingLogs } from '../pages/AdminBookingLogs'
+import { AdminUserBookingLogs } from '../pages/AdminUserBookingLogs'
 
 // Create a root route
 const rootRoute = createRootRoute({
@@ -161,6 +163,36 @@ const adminFoodRoute = createRoute({
   ),
 })
 
+const adminBookingLogsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/booking-logs',
+  component: AdminBookingLogs,
+  beforeLoad: () => {
+    const { user } = useAuthStore.getState()
+    if (!user || user.role !== 'admin') {
+      throw new Error('Unauthorized')
+    }
+  },
+  errorComponent: () => (
+    <Navigate to="/login" search={{ role: 'admin' }} />
+  ),
+})
+
+const adminUserBookingLogsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/user-booking-logs',
+  component: AdminUserBookingLogs,
+  beforeLoad: () => {
+    const { user } = useAuthStore.getState()
+    if (!user || user.role !== 'admin') {
+      throw new Error('Unauthorized')
+    }
+  },
+  errorComponent: () => (
+    <Navigate to="/login" search={{ role: 'admin' }} />
+  ),
+})
+
 const theaterOwnerLoginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/owner/login',
@@ -250,6 +282,8 @@ export const routeTree = rootRoute.addChildren([
   adminTheatersRoute,
   adminShowsRoute,
   adminFoodRoute,
+  adminBookingLogsRoute,
+  adminUserBookingLogsRoute,
   theaterOwnerLoginRoute,
   theaterOwnerRegisterRoute,
   theaterOwnerHomeRoute,

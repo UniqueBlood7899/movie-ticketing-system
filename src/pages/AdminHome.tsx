@@ -78,6 +78,32 @@ export function AdminHome() {
             Manage Food →
           </Link>
         </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-2">Booking Logs</h2>
+          <p className="text-gray-600 mb-4">
+            View logs of all booking actions
+          </p>
+          <Link 
+            to="/admin/booking-logs" 
+            className="text-indigo-600 hover:text-indigo-800"
+          >
+            View Booking Logs →
+          </Link>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-2">User Booking Logs</h2>
+          <p className="text-gray-600 mb-4">
+            View booking logs for specific users
+          </p>
+          <Link 
+            to="/admin/user-booking-logs" 
+            className="text-indigo-600 hover:text-indigo-800"
+          >
+            View User Logs →
+          </Link>
+        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-md overflow-hidden">

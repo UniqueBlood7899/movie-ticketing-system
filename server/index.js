@@ -9,6 +9,7 @@ import { showRoutes } from './routes/shows.js';
 import { bookingRoutes } from './routes/bookings.js';
 import { userRoutes } from './routes/users.js';
 import { foodRoutes } from './routes/food.js';
+import { bookingLogsRoutes } from './routes/bookingLogs.js';
 
 dotenv.config();
 
@@ -55,6 +56,7 @@ app.use('/api/shows', showRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/food', foodRoutes);
+app.use('/api/booking-logs', bookingLogsRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -64,7 +66,7 @@ app.use((req, res) => {
 
 // Add error handler
 app.use((err, req, res, next) => {
-  console.error(err);
+  console.error('Internal Server Error:', err);
   res.status(500).json({ error: 'Internal server error' });
 });
 

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { Movie, Theater, Show, Food } from '../types'
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: 'http://localhost:5001/api',
 })
 
@@ -56,6 +56,7 @@ export const deleteShow = (id: number) =>
 // Bookings
 export const createBooking = (data: any) => api.post('/bookings', data).then(res => res.data)
 export const getBookings = () => api.get('/bookings').then(res => res.data)
+export const getBookingLogs = () => api.get('/booking-logs').then(res => res.data)
 
 // Users
 export const login = (data: any) => api.post('/users/login', data).then(res => res.data)
