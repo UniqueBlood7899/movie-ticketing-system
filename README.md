@@ -38,15 +38,21 @@
 ### Installation
 
 1. **Clone the repository**
+```bash
     git clone https://github.com/UniqueBlood7899/movie-ticketing-system.git
     cd movie-ticketing-system
+```
 
 2. **Create the database in your local machine by running the server\schema.sql file in your workbench, etc.**
 
 3. **Install dependencies:**
+```bash
     npm install
+```
     
 4. **Change the .env file accordingly.**
 
 5. **Run the project:**
+```bash
     npm run dev
+```
