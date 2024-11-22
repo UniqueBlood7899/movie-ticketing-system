@@ -49,4 +49,4 @@
 4. **Change the .env file accordingly.**
 
 5. **Run the project:**
-    npm start
+    npm run dev
