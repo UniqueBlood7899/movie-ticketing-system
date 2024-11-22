@@ -11,11 +11,9 @@
 ## ✨ Features
 
 - 🔐 Secure user authentication and registration
-- 🎥 Browse current and upcoming movies
 - 📅 Real-time showtime availability
 - 💺 Interactive seat selection
 - 🎫 Quick and easy ticket booking
-- 📱 Responsive design for all devices
 - 👤 User profile and booking history
 - 🔧 Admin dashboard for system management
 
